@@ -1,0 +1,75 @@
+Processing video file data/NBA19_20_cut/855_19_20/segment_004.mp4
+Loaded 246 frames, fps: 30.121951219512194
+Traceback (most recent call last):
+  File "/data/zepeng/PromptHMR/scripts/demo_video.py", line 73, in <module>
+    tyro.cli(main)
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/tyro/_cli.py", line 229, in cli
+    return run_with_args_from_cli()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/demo_video.py", line 27, in main
+    results = pipeline.__call__(input_video, 
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/pipeline.py", line 325, in __call__
+    spec_calib = run_cam_calib(self.images, out_folder=seq_folder+'/spec_calib', 
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/cam_calib.py", line 625, in run_cam_calib
+    return run_spec_calib(images, out_folder, loss_type, save_res, stride, first_frame_idx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/cam_calib.py", line 497, in run_spec_calib
+    preds = model(img)
+            ^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/cam_calib.py", line 413, in forward
+    x = self.backbone(images)
+        ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/resnet.py", line 221, in forward
+    return self._forward_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/resnet.py", line 211, in _forward_impl
+    x = self.layer3(x)
+        ^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/container.py", line 219, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/spec/resnet.py", line 105, in forward
+    out = self.conv1(x)
+          ^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 458, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/torch/nn/modules/conv.py", line 454, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

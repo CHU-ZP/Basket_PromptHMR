@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/data/zepeng/PromptHMR/scripts/demo_video.py", line 15, in <module>
+    from pipeline import Pipeline
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/__init__.py", line 1, in <module>
+    from .pipeline import Pipeline
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/pipeline.py", line 11, in <module>
+    from pipeline.detector.vitpose_estimator import load_vit_model, estimate_kp2ds_from_bbox_vitpose
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/detector/vitpose_estimator.py", line 5, in <module>
+    from .ViTPose.easy_vitpose.inference import VitInference
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/detector/ViTPose/easy_vitpose/__init__.py", line 1, in <module>
+    from .inference import VitInference
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/detector/ViTPose/easy_vitpose/inference.py", line 13, in <module>
+    from .sort import Sort
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/detector/ViTPose/easy_vitpose/sort.py", line 31, in <module>
+    from filterpy.kalman import KalmanFilter
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/filterpy/kalman/__init__.py", line 22, in <module>
+    from .EKF import *
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/filterpy/kalman/EKF.py", line 28, in <module>
+    from filterpy.stats import logpdf
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/filterpy/stats/__init__.py", line 22, in <module>
+    from .stats import *
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/filterpy/stats/stats.py", line 32, in <module>
+    from scipy.stats import norm, multivariate_normal
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/scipy/stats/__init__.py", line 624, in <module>
+    from ._stats_py import *
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/scipy/stats/_stats_py.py", line 52, in <module>
+    from . import distributions
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/scipy/stats/distributions.py", line 8, in <module>
+    from ._distn_infrastructure import (rv_discrete, rv_continuous, rv_frozen)  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1069, in get_code
+  File "<frozen importlib._bootstrap_external>", line 729, in _compile_bytecode
+KeyboardInterrupt

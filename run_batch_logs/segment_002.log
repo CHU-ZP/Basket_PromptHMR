@@ -1,0 +1,28 @@
+Using cache found in /home/zepeng/.cache/torch/hub/pytorch_vision_v0.10.0
+Processing video file data/NBA19_20_cut/855_19_20/segment_002.mp4
+Loaded 304 frames, fps: 30.29861011978146
+Running detect, segment, and track pipeline...
+UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3609.)
+Loaded checkpoint sucessfully
+Combined score: [    0.97004     0.80937     0.90514     0.82217     0.99467     0.82676     0.47229     0.68403     0.50965     0.63298     0.64207     0.60988     0.52331     0.52793     0.46508     0.57494     0.50765     0.64004      0.4232     0.35296     0.31287     0.36741     0.49863     0.28192     0.42795     0.58938
+     0.57767     0.45863     0.55917     0.29427     0.32761     0.17847     0.30287     0.57947     0.47741     0.47146     0.28737     0.47647     0.44447     0.30599     0.28565     0.25403     0.37211     0.20337     0.48842     0.20418      0.2526     0.29301      0.2156     0.20677     0.29286]
+number of people before filtering (height < 0.57 max): 50
+number of people after filtering (height < 0.57 max): 9
+Traceback (most recent call last):
+  File "/data/zepeng/PromptHMR/scripts/demo_video.py", line 73, in <module>
+    tyro.cli(main)
+  File "/home/zepeng/miniconda3/envs/phmr_pt2.4/lib/python3.11/site-packages/tyro/_cli.py", line 229, in cli
+    return run_with_args_from_cli()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/demo_video.py", line 27, in main
+    results = pipeline.__call__(input_video, 
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/pipeline.py", line 333, in __call__
+    self.run_detect_track()
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/pipeline.py", line 74, in run_detect_track
+    tracks, masks = detect_segment_track_sam(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/zepeng/PromptHMR/scripts/../pipeline/tools.py", line 330, in detect_segment_track_sam
+    overlay[candidate_mask > 0] = cv2.addWeighted(
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
