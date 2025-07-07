@@ -8,6 +8,95 @@ from collections import defaultdict
 from scipy.interpolate import make_interp_spline, interp1d
 
 from .image_folder import ImageFolder
+from shapely.geometry import Point, Polygon
+
+import cv2
+import numpy as np
+
+def get_field(img):
+    """
+    提取图像中的场地区域mask（HSV颜色筛选 + 膨胀 + 去噪 + 凸包）。
+    
+    输入:
+        img: np.ndarray, BGR图像 (H, W, 3)
+
+    输出:
+        mask: np.ndarray, 二值mask (H, W)，uint8类型，地板区域为255，其余为0
+    """
+    # Step 1: 高斯模糊
+    blur = cv2.GaussianBlur(img, (5, 5), 0)
+
+    # Step 2: 转 HSV
+    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+
+    # Step 3: HSV颜色筛选（地板颜色范围）
+    lower = np.array([15, 60, 120]) 
+    upper = np.array([28, 170, 255])
+    mask = cv2.inRange(hsv, lower, upper)
+
+    # Step 4.1: 膨胀 + 连通域去小区域噪声
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.erode(mask, kernel, iterations=1)
+
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(mask)
+    min_area = 1000
+    filtered_mask = np.zeros_like(mask)
+    for i in range(1, num_labels):
+        if stats[i, cv2.CC_STAT_AREA] >= min_area:
+            filtered_mask[labels == i] = 255
+    mask = filtered_mask
+
+    # Step 4.2: 再次腐蚀边缘 + 开运算
+    mask = cv2.erode(mask, kernel, iterations=1)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    # Step 4.3: 外轮廓凸包合并
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        all_points = np.vstack(contours)
+        hull = cv2.convexHull(all_points)
+        hull_mask = np.zeros_like(mask)
+        cv2.drawContours(hull_mask, [hull], -1, 255, -1)
+        mask = hull_mask
+
+    return mask  # uint8, shape=(H, W)
+
+
+def filter_boxes(boxes, keypoints, mask, kp_thres=0.1):
+    """
+    保留bbox底边中点落在mask区域中的目标。
+
+    参数：
+        boxes: np.ndarray, shape (N, 4), 每个 bbox 的 (x1, y1, x2, y2)
+        keypoints: np.ndarray, shape (N, K, 3)
+        mask: np.ndarray, shape (H, W), 值为 0 或 1 或 0/255
+        kp_thres: 保留字段（未用）
+
+    返回：
+        filtered_boxes: np.ndarray
+        filtered_keypoints: np.ndarray
+        filtered_indices: list[int]
+    """
+    filtered_boxes = []
+    filtered_keypoints = []
+    filtered_indices = []
+
+    h, w = mask.shape
+
+    for i, (box, kps) in enumerate(zip(boxes, keypoints)):
+        cx = (box[0] + box[2]) / 2
+        cy = box[3]
+
+        x, y = int(round(cx)), int(round(cy))
+
+        if 0 <= x < w and 0 <= y < h and mask[y, x] > 0:
+            filtered_boxes.append(box)
+            filtered_keypoints.append(kps)
+            filtered_indices.append(i)
+        else:
+            print(f"[Filter] Reject person {i}: bbox bottom not in mask.")
+
+    return np.array(filtered_boxes), np.array(filtered_keypoints), filtered_indices
 
 
 def est_camera(image):
@@ -201,7 +290,7 @@ def detect_segment_track_sam(images, out_path, paths_dict, debug_masks, sam2_typ
             keypoints = keypoints[conf]
             scores = scores[conf]
             boxes = boxes[conf]
-            
+
             # Calculate areas of bounding boxes
             areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
             bbox_height = boxes[:, 3] - boxes[:, 1]
@@ -224,10 +313,38 @@ def detect_segment_track_sam(images, out_path, paths_dict, debug_masks, sam2_typ
                 print(f'number of people after filtering (height < {height_thresh} max): {len(best_idxs)}')
 
             # Get the details of the best person
-            best_boxes = boxes[best_idxs]
-            best_scores = scores[best_idxs]
-            best_keypoints = keypoints[best_idxs]
-            best_combined_scores = combined_score[best_idxs]
+            # best_boxes = boxes[best_idxs]
+            # best_scores = scores[best_idxs]
+            # best_keypoints = keypoints[best_idxs]
+            # best_combined_scores = combined_score[best_idxs]
+            # 1. 先获取候选的目标
+            candidate_boxes = boxes[best_idxs]
+            candidate_scores = scores[best_idxs]
+            candidate_keypoints = keypoints[best_idxs]
+            candidate_combined_scores = combined_score[best_idxs]
+
+            # 2. 读取当前帧的mask
+            candidate_mask = get_field(img_cv2)
+            green = np.full_like(img_cv2, (0, 255, 0))
+            overlay = img_cv2.copy()
+            overlay[candidate_mask > 0] = cv2.addWeighted(
+                img_cv2[candidate_mask > 0], 0.6, green[candidate_mask > 0], 0.4, 0
+            )
+
+            cv2.imwrite(f"{out_path}/debug_mask_overlay_{i:04d}.png", overlay)
+
+            # 3. 调用你封装好的函数
+            filtered_boxes, filtered_keypoints, keep_indices = filter_boxes(
+                candidate_boxes, candidate_keypoints, candidate_mask, kp_thres=kp_thres
+            )
+
+            # 4. 用过滤后的结果覆盖
+            best_boxes = filtered_boxes
+            best_keypoints = filtered_keypoints
+            best_scores = candidate_scores[keep_indices]
+            best_combined_scores = candidate_combined_scores[keep_indices]
+
+
             start_frame = i
             print(f"Best person scores: {best_scores}")
             print(f"Best person combined scores: {best_combined_scores}")

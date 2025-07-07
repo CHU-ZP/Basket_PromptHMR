@@ -11,9 +11,9 @@ hand_pose: false
 smooth_cam: true
 use_spec_calib: true
 
-det_thresh: 0.1
-det_score_thresh: 0.1
-det_height_thresh: 0.3
+det_thresh: 0.15
+det_score_thresh: 0.2
+det_height_thresh: 0.57
 save_vos: false
 save_depth: false
 

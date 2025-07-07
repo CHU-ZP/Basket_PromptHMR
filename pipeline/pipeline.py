@@ -75,7 +75,7 @@ class Pipeline:
                 self.images, 
                 self.seq_folder, 
                 self.data_dict,
-                debug_masks=False,
+                debug_masks=True,
                 sam2_type='tiny',
                 detector_type='detectron2',
                 num_max_people=self.cfg.num_max_people,

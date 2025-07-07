@@ -26,7 +26,7 @@ def main(input_video='data/examples/boxing_short.mp4',
     pipeline = Pipeline(static_cam=static_camera)
     results = pipeline.__call__(input_video, 
                                 output_folder, 
-                                save_only_essential=True)
+                                save_only_essential=False)
    
     # Downsample for viser visualization
     images = pipeline.images[:viser_total][::viser_subsample]
