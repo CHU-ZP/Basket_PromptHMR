@@ -30,8 +30,16 @@ def get_field(img):
     hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
 
     # Step 3: HSV颜色筛选（地板颜色范围）
-    lower = np.array([15, 60, 120]) 
-    upper = np.array([28, 170, 255])
+    bins = (10, 10, 10)
+    hsv_q = (hsv[..., 0] // (180 // bins[0]),
+            hsv[..., 1] // (256 // bins[1]),
+            hsv[..., 2] // (256 // bins[2]))
+    q_flat = (hsv_q[0] * bins[1] * bins[2] + hsv_q[1] * bins[2] + hsv_q[2]).flatten()
+    hq, sq, vq = np.unravel_index(np.argmax(np.bincount(q_flat)), bins)
+    h_c, s_c, v_c = [(q + 0.5) * step for q, step in zip((hq, sq, vq), (180//bins[0], 256//bins[1], 256//bins[2]))]
+    margins = (20, 55, 55)
+    lower = np.clip([h_c - margins[0], s_c - margins[1], v_c - margins[2]], [0, 0, 0], [179, 255, 255]).astype(np.uint8)
+    upper = np.clip([h_c + margins[0], s_c + margins[1], v_c + margins[2]], [0, 0, 0], [179, 255, 255]).astype(np.uint8)
     mask = cv2.inRange(hsv, lower, upper)
 
     # Step 4.1: 膨胀 + 连通域去小区域噪声
