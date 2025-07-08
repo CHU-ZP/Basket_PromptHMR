@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import time
 import tyro
+from typing import Optional
 
 sys.path.insert(0, os.path.dirname(__file__) + '/..')
 from data_config import SMPLX_PATH
@@ -15,14 +16,21 @@ from prompt_hmr.vis.traj import get_floor_mesh
 from pipeline import Pipeline
 
 
-def main(input_video='data/examples/boxing_short.mp4', 
+def main(input_video='...', 
          static_camera=False,
          run_viser=True,
          viser_total=1500, 
-         viser_subsample=1):
+         viser_subsample=1,
+         output_dir: Optional[str] = None):
     smplx = SMPLX_Layer(SMPLX_PATH).cuda()
 
-    output_folder = 'results/' + os.path.basename(input_video).split('.')[0]
+    if output_dir is None:
+        output_folder = 'results/' + os.path.basename(input_video).split('.')[0]
+    else:
+        output_folder = output_dir
+
+    os.makedirs(output_folder, exist_ok=True)
+
     pipeline = Pipeline(static_cam=static_camera)
     results = pipeline.__call__(input_video, 
                                 output_folder, 
