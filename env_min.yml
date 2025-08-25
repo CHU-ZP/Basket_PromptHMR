@@ -1,0 +1,12 @@
+name: phmr_pt2.4
+channels:
+  - nvidia
+  - pytorch
+  - defaults
+dependencies:
+  - python==3.11.8
+  - suitesparse
+  - cuda-toolkit
+  - numpy
+  - opencv
+prefix: /home/zepeng/miniconda3/envs/phmr_pt2.4
