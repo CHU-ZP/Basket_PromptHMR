@@ -51,9 +51,9 @@ for subdir in "$INPUT_DIR"/*; do
 
             # 运行 Python 脚本
             CUDA_VISIBLE_DEVICES="$GPU_ID" python scripts/demo_video.py \
-                --input_video "$video" \
-                --output_dir "$OUTPUT_DIR" \
-                --viser_subsample "$SUBSAMPLE" \
+                --input-video "$video" \
+                --output-dir "$OUTPUT_DIR" \
+                --viser-subsample "$SUBSAMPLE" \
                 --no-run-viser \
                 > "$log_file" 2>&1
             status=$?
