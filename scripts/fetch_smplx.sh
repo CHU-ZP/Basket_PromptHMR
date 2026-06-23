@@ -3,8 +3,15 @@ urle () { [[ "${1}" ]] || return 1; local LANG=C i x; for (( i = 0; i < ${#1}; i
 
 # # SMPL-X model
 echo -e "\nYou need to register at https://smpl-x.is.tue.mpg.de"
-read -p "Username (SMPL-X):" username
-read -p "Password (SMPL-X):" password
+username="${SMPLX_USERNAME:-}"
+password="${SMPLX_PASSWORD:-}"
+if [ -z "$username" ]; then
+    read -p "Username (SMPL-X):" username
+fi
+if [ -z "$password" ]; then
+    read -s -p "Password (SMPL-X):" password
+    echo
+fi
 username=$(urle $username)
 password=$(urle $password)
 
@@ -18,8 +25,15 @@ rm -rf data/body_models/smplx.zip
 
 # SMPL Male and Female model
 echo -e "\nYou need to register at https://smpl.is.tue.mpg.de"
-read -p "Username (SMPL):" username
-read -p "Password (SMPL):" password
+username="${SMPL_USERNAME:-${SMPLX_USERNAME:-}}"
+password="${SMPL_PASSWORD:-${SMPLX_PASSWORD:-}}"
+if [ -z "$username" ]; then
+    read -p "Username (SMPL):" username
+fi
+if [ -z "$password" ]; then
+    read -s -p "Password (SMPL):" password
+    echo
+fi
 username=$(urle $username)
 password=$(urle $password)
 

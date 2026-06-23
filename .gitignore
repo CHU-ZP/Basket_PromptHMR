@@ -1,5 +1,6 @@
 # Project specific data and submodule
 .vscode/
+.venv/
 **/.DS_Store
 *.mov
 *.mp4
@@ -53,3 +54,4 @@ ipython_config.py
 BASKET/
 save_results/
 log.txt
+processed_folders.txt

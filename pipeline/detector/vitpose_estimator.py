@@ -23,7 +23,7 @@ def estimate_kp2ds_from_bbox_vitpose(model, images, bboxes, track_id, frame_inds
     all_kp2ds = []
 
     for ind, ith in enumerate(frame_inds):
-        img, bbox = images[ind], bboxes[ind]
+        img, bbox = images[int(ith)], bboxes[ind]
 
         if isinstance(img, str):
             img = cv2.imread(img)

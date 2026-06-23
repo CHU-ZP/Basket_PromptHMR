@@ -64,7 +64,7 @@ def world_hps_estimation(cfg, results, smplx):
         Rroll = rotation_about_y(spec_calib['roll'])[None, :3, :3]
         cam_wc[:, :3, :3] = Rpitch @ Rroll @ cam_wc[:, :3, :3]
         cam_wc[:, :3, 3] = (Rpitch @ Rroll @ cam_wc[:, :3, 3][..., None]).squeeze()
-    elif cfg.use_floor_rectify:
+    elif cfg.get("use_floor_rectify", False):
         #TODO:
         pass
     Rwc = cam_wc[:, :3, :3]

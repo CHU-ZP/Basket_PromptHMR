@@ -3,6 +3,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 import numpy as np 
 from torchvision import transforms
+from torchvision.models.segmentation import deeplabv3_resnet50, DeepLabV3_ResNet50_Weights
 import torch.nn.functional as F
 
 def preprocess_fn(img):
@@ -53,13 +54,7 @@ def segment_preprocess_fn(img, max_length=512):
     return tf(img)
 
 def segment_subjects(images, device='cuda', max_length=512):
-    # segm_model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_resnet50', 
-    #                             pretrained=True, verbose=False).to(device)
-    from torchvision.models.segmentation import (
-        DeepLabV3_ResNet50_Weights,
-    )
-    segm_model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_resnet50', 
-                                weights=DeepLabV3_ResNet50_Weights.DEFAULT).to(device)
+    segm_model = deeplabv3_resnet50(weights=DeepLabV3_ResNet50_Weights.DEFAULT).to(device)
     segm_model.eval()
 
     #image_rescale = min(max(cv2.imread(images[0]).shape[:2]) // max_length, 1)

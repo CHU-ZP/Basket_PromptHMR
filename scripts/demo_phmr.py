@@ -23,12 +23,16 @@ from pipeline.camcalib.model import CameraRegressorNetwork
 from segment_anything import SamPredictor, sam_model_registry
 
 
+def resolve_yolo_weight(local_path, fallback):
+    return local_path if os.path.exists(local_path) else fallback
+
+
 def main(image='data/examples/example_1.jpg', gravity_align=False, detect_conf=0.3, render_overlap=True):
     savedir = os.path.basename(image)
     os.makedirs(savedir, exist_ok=True)
 
     smplx = SMPLX(SMPLX_PATH).cuda()
-    yolo = YOLO("data/pretrain/yolov8x.pt")
+    yolo = YOLO(resolve_yolo_weight("data/pretrain/yolov8x.pt", "yolov8x.pt"))
     phmr = load_model_from_folder('data/pretrain/phmr')
 
     # Prompt HMR

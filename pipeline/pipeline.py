@@ -32,7 +32,7 @@ class Pipeline:
             'droid': os.path.join(checkpoint_dir, 'droid.pth'), 
             'sam': os.path.join(checkpoint_dir, "sam_vit_h_4b8939.pth"), 
             'sam2': os.path.join(checkpoint_dir, "sam2_ckpts"), 
-            'yolo': os.path.join(checkpoint_dir, 'yolo11x.pt'), 
+            'yolo': self.resolve_weight(os.path.join(checkpoint_dir, 'yolo11x.pt'), 'yolo11x.pt'),
             'vitpose': os.path.join(checkpoint_dir, 'vitpose-h-coco_25.pth'), 
         }
 
@@ -44,21 +44,26 @@ class Pipeline:
         )
 
 
+    @staticmethod
+    def resolve_weight(local_path, fallback):
+        return local_path if os.path.exists(local_path) else fallback
+
+
     def load_frames(self, input_video, output_folder, read_frames=True):
         if read_frames == True:
             images, seq_folder, fps = load_video_frames(
                 input_video, 
                 output_folder=output_folder, 
-                max_height=896,
-                max_fps=60,
+                max_height=self.cfg.max_height,
+                max_fps=self.cfg.max_fps,
             )
         else: 
             # this currently will cause issue with sam2 
             images, seq_folder, img_folder, fps = prepare_inputs(
                 input_video, 
                 output_folder=output_folder, 
-                max_height=896,
-                max_fps=60,
+                max_height=self.cfg.max_height,
+                max_fps=self.cfg.max_fps,
             )
         self.fps = fps
         return images, seq_folder
@@ -67,6 +72,7 @@ class Pipeline:
     def run_detect_track(self, ):
         if self.cfg.tracker == 'bytetrack':
             tracks = detect_track(self.images,
+                                  yolo_path=self.data_dict['yolo'],
                                   bbox_interp=self.cfg.bbox_interp)
             masks = segment.segment_subjects(self.images)
 
@@ -293,6 +299,7 @@ class Pipeline:
         self.images = images[:max_frame]
         self.seq_folder = seq_folder
         self.cfg.seq_folder = seq_folder
+        self.cfg.fps = float(self.fps)
 
         if os.path.isfile(f'{seq_folder}/results.pkl'):
             print('Loading available results...')

@@ -21,14 +21,15 @@ for subdir in "$INPUT_DIR"/*; do
             continue
         fi
 
-        # 写入已处理记录
-        echo "$parent_folder" >> "$PROCESSED_FILE"
+        folder_failed=0
+        processed_any=0
 
         # 遍历子文件夹下所有 mp4
         for video in "$subdir"/*.mp4; do
             if [ ! -f "$video" ]; then
                 continue
             fi
+            processed_any=1
 
             filename=$(basename "$video" .mp4)
             LOG_DIR="${LOG_PARENT_DIR}/${filename}"
@@ -55,11 +56,12 @@ for subdir in "$INPUT_DIR"/*; do
                 --viser_subsample "$SUBSAMPLE" \
                 --no-run-viser \
                 > "$log_file" 2>&1
+            status=$?
 
             echo "Saving results to: $OUTPUT_DIR" >> "${LOG_DIR}/log.txt"
 
             # 结束 nvidia-smi
-            kill $SMI_PID
+            kill "$SMI_PID" 2>/dev/null || true
 
             # 计算显存峰值和平均
             peak_mem=$(awk 'BEGIN{max=0} {if($1>max) max=$1} END{print max}' "$mem_log_file")
@@ -67,6 +69,14 @@ for subdir in "$INPUT_DIR"/*; do
 
             echo "GPU Peak Memory: ${peak_mem} MiB" >> "$log_file"
             echo "GPU Average Memory: ${avg_mem} MiB" >> "$log_file"
+            if [ "$status" -ne 0 ]; then
+                echo "Processing failed with exit code ${status}" >> "$log_file"
+                folder_failed=1
+            fi
         done
+
+        if [ "$processed_any" -eq 1 ] && [ "$folder_failed" -eq 0 ]; then
+            echo "$parent_folder" >> "$PROCESSED_FILE"
+        fi
     fi
 done

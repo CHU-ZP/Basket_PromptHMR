@@ -1,5 +1,7 @@
 calib: null
 focal: null
+calib_stride: 1
+img_folder: null
 stride: 1
 tracker: sam2
 kp2d_detector: vitpose
@@ -10,6 +12,7 @@ calib_method: ba
 hand_pose: false
 smooth_cam: true
 use_spec_calib: true
+use_floor_rectify: false
 
 det_thresh: 0.15
 det_score_thresh: 0.2

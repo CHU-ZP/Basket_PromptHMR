@@ -9,6 +9,7 @@ from scipy.interpolate import make_interp_spline, interp1d
 
 from .image_folder import ImageFolder
 from shapely.geometry import Point, Polygon
+from torchvision.models.segmentation import deeplabv3_resnet50, DeepLabV3_ResNet50_Weights
 
 import cv2
 import numpy as np
@@ -133,10 +134,11 @@ def detect_track(images, savedir=None, visualization=False,
                  yolo_thresh=0.10, 
                  bytetrack_thresh=0.25, 
                  bytetrack_match=0.8,
-                 bbox_interp=False):
+                 bbox_interp=False,
+                 yolo_path="data/pretrain/yolo11x.pt"):
 
     # Yolo + Bytetrack
-    yolo = YOLO("data/yolo11x.pt")
+    yolo = YOLO(yolo_path)
     box_annotator = sv.BoxAnnotator(thickness=5)
     tracker = sv.ByteTrack(track_activation_threshold=bytetrack_thresh,
                             minimum_matching_threshold=bytetrack_match)
@@ -205,14 +207,12 @@ def detect_segment_track_sam(images, out_path, paths_dict, debug_masks, sam2_typ
                              num_max_people=10, height_thresh=0.3, score_thresh=0.4, det_thresh=0.5, 
                              bbox_interp=False):
     from torch.utils.data import DataLoader
-    from torchvision.models.segmentation import DeepLabV3_ResNet50_Weights
     from detectron2.config import get_cfg
     from .detector.sam2_video_predictor import build_sam2_video_predictor
     from .utils_detectron2 import DefaultPredictor
     
     device = 'cuda'
-    segm_model = torch.hub.load('pytorch/vision:v0.10.0', 'deeplabv3_resnet50', 
-                                weights=DeepLabV3_ResNet50_Weights.DEFAULT).to(device)
+    segm_model = deeplabv3_resnet50(weights=DeepLabV3_ResNet50_Weights.DEFAULT).to(device)
     segm_model.eval()
     
     segm_dataloader = DataLoader(ImageFolder(images), batch_size=8, shuffle=False, 
@@ -335,9 +335,8 @@ def detect_segment_track_sam(images, out_path, paths_dict, debug_masks, sam2_typ
             candidate_mask = get_field(img_cv2)
             green = np.full_like(img_cv2, (0, 255, 0))
             overlay = img_cv2.copy()
-            overlay[candidate_mask > 0] = cv2.addWeighted(
-                img_cv2[candidate_mask > 0], 0.6, green[candidate_mask > 0], 0.4, 0
-            )
+            blended = cv2.addWeighted(img_cv2, 0.6, green, 0.4, 0)
+            overlay[candidate_mask > 0] = blended[candidate_mask > 0]
 
             cv2.imwrite(f"{out_path}/debug_mask_overlay_{i:04d}.png", overlay)
 
@@ -645,9 +644,6 @@ def interpolate_bboxes(bboxes, frames, masks, fn='linear'):
     all_masks[indices] = masks
 
     return interp_bboxes, all_frames, all_masks
-
-
-
 
 
 
