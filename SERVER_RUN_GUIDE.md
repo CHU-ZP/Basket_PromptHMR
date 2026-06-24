@@ -343,6 +343,27 @@ results/my_video/subject-*.smpl
 
 ## 11. 批量处理篮球视频
 
+如果手里是长视频，可以先切成短片段：
+
+```bash
+uv run python cut_video_frame_precise_batch.py \
+  /path/to/long/videos \
+  data/basketball_cut \
+  --threshold 6.0 \
+  --min-frames 90
+```
+
+`/path/to/long/videos` 可以是一个视频文件，也可以是包含多个视频的目录。输出结构会类似：
+
+```text
+data/basketball_cut/
+  long_video_1/
+    segment_001.mp4
+    segment_002.mp4
+  long_video_2/
+    segment_001.mp4
+```
+
 当前 `run_batch.sh` 假设输入目录结构是：
 
 ```text
