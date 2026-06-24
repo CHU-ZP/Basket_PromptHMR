@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Basket PromptHMR Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e1116;
+      --panel: #171b22;
+      --line: #2a303a;
+      --text: #f3f5f7;
+      --muted: #9da6b2;
+      --accent: #53c6a2;
+      --accent-strong: #72e0bc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 720;
+    }
+
+    .meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .clip-tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      background: #11151b;
+      border-radius: 8px;
+    }
+
+    .clip-tab,
+    .control {
+      min-height: 36px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text);
+      background: transparent;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .clip-tab {
+      padding: 0 14px;
+      color: var(--muted);
+    }
+
+    .clip-tab[aria-pressed="true"] {
+      color: #06100c;
+      background: var(--accent);
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    section {
+      min-width: 0;
+    }
+
+    .label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+    }
+
+    .tag {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .video-shell {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      aspect-ratio: 16 / 9;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #05070a;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #12161d;
+    }
+
+    .control {
+      padding: 0 14px;
+      background: #202631;
+    }
+
+    .control.primary {
+      color: #06100c;
+      background: var(--accent);
+    }
+
+    .control:hover,
+    .clip-tab:hover {
+      border-color: var(--accent-strong);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .time {
+      min-width: 96px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    @media (max-width: 860px) {
+      main {
+        padding: 18px;
+      }
+
+      header,
+      .stage,
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .clip-tabs {
+        width: 100%;
+      }
+
+      .clip-tab {
+        flex: 1;
+      }
+
+      .time {
+        min-width: 0;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Basket PromptHMR Demo</h1>
+        <div class="meta" id="clipMeta">Segment 001</div>
+      </div>
+      <div class="clip-tabs" aria-label="Clip selection">
+        <button class="clip-tab" type="button" data-clip="0" aria-pressed="true">Segment 001</button>
+        <button class="clip-tab" type="button" data-clip="1" aria-pressed="false">Segment 011</button>
+      </div>
+    </header>
+
+    <div class="stage">
+      <section>
+        <div class="label">
+          <h2>Original Video</h2>
+          <span class="tag" id="sourceName">segment_001.mp4</span>
+        </div>
+        <div class="video-shell">
+          <video id="sourceVideo" muted playsinline preload="metadata"></video>
+        </div>
+      </section>
+
+      <section>
+        <div class="label">
+          <h2>3D Reconstruction</h2>
+          <span class="tag" id="reconName">segment001_3d.mp4</span>
+        </div>
+        <div class="video-shell">
+          <video id="reconVideo" muted playsinline preload="metadata"></video>
+        </div>
+      </section>
+    </div>
+
+    <div class="controls">
+      <button class="control primary" type="button" id="playPause">Play</button>
+      <button class="control" type="button" id="restart">Restart</button>
+      <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Timeline" />
+      <div class="time" id="timeLabel">0.0 / 0.0s</div>
+    </div>
+  </main>
+
+  <script>
+    const clips = [
+      {
+        label: "Segment 001",
+        source: "assets/segment_001.mp4",
+        reconstruction: "assets/segment001_3d.mp4",
+      },
+      {
+        label: "Segment 011",
+        source: "assets/segment_011.mp4",
+        reconstruction: "assets/segment011_3d.mp4",
+      },
+    ];
+
+    const sourceVideo = document.querySelector("#sourceVideo");
+    const reconVideo = document.querySelector("#reconVideo");
+    const playPause = document.querySelector("#playPause");
+    const restart = document.querySelector("#restart");
+    const timeline = document.querySelector("#timeline");
+    const timeLabel = document.querySelector("#timeLabel");
+    const clipMeta = document.querySelector("#clipMeta");
+    const sourceName = document.querySelector("#sourceName");
+    const reconName = document.querySelector("#reconName");
+    const tabs = Array.from(document.querySelectorAll(".clip-tab"));
+
+    let activeClip = 0;
+    let seeking = false;
+
+    function basename(path) {
+      return path.split("/").pop();
+    }
+
+    function duration() {
+      return Math.max(sourceVideo.duration || 0, reconVideo.duration || 0);
+    }
+
+    function syncReconstruction() {
+      if (Math.abs(reconVideo.currentTime - sourceVideo.currentTime) > 0.08) {
+        reconVideo.currentTime = Math.min(sourceVideo.currentTime, reconVideo.duration || sourceVideo.currentTime);
+      }
+    }
+
+    function updateTime() {
+      const total = duration();
+      const current = sourceVideo.currentTime || 0;
+      if (!seeking && total > 0) {
+        timeline.value = String(Math.round((current / total) * Number(timeline.max)));
+      }
+      timeLabel.textContent = `${current.toFixed(1)} / ${total.toFixed(1)}s`;
+      syncReconstruction();
+    }
+
+    function setClip(index) {
+      activeClip = index;
+      const clip = clips[index];
+      sourceVideo.pause();
+      reconVideo.pause();
+      sourceVideo.src = clip.source;
+      reconVideo.src = clip.reconstruction;
+      clipMeta.textContent = clip.label;
+      sourceName.textContent = basename(clip.source);
+      reconName.textContent = basename(clip.reconstruction);
+      playPause.textContent = "Play";
+      timeline.value = "0";
+      timeLabel.textContent = "0.0 / 0.0s";
+      tabs.forEach((tab, tabIndex) => {
+        tab.setAttribute("aria-pressed", String(tabIndex === index));
+      });
+      sourceVideo.load();
+      reconVideo.load();
+    }
+
+    async function playBoth() {
+      syncReconstruction();
+      await Promise.allSettled([sourceVideo.play(), reconVideo.play()]);
+      playPause.textContent = "Pause";
+    }
+
+    function pauseBoth() {
+      sourceVideo.pause();
+      reconVideo.pause();
+      playPause.textContent = "Play";
+    }
+
+    playPause.addEventListener("click", () => {
+      if (sourceVideo.paused) {
+        playBoth();
+      } else {
+        pauseBoth();
+      }
+    });
+
+    restart.addEventListener("click", () => {
+      sourceVideo.currentTime = 0;
+      reconVideo.currentTime = 0;
+      updateTime();
+      if (!sourceVideo.paused) {
+        playBoth();
+      }
+    });
+
+    timeline.addEventListener("input", () => {
+      seeking = true;
+      const total = duration();
+      const nextTime = (Number(timeline.value) / Number(timeline.max)) * total;
+      sourceVideo.currentTime = nextTime;
+      reconVideo.currentTime = nextTime;
+      timeLabel.textContent = `${nextTime.toFixed(1)} / ${total.toFixed(1)}s`;
+    });
+
+    timeline.addEventListener("change", () => {
+      seeking = false;
+      updateTime();
+    });
+
+    sourceVideo.addEventListener("timeupdate", updateTime);
+    sourceVideo.addEventListener("loadedmetadata", updateTime);
+    reconVideo.addEventListener("loadedmetadata", updateTime);
+    sourceVideo.addEventListener("ended", pauseBoth);
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setClip(Number(tab.dataset.clip));
+      });
+    });
+
+    setClip(activeClip);
+  </script>
+</body>
+</html>

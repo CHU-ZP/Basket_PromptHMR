@@ -5,6 +5,11 @@
 *.mov
 *.mp4
 *.jpg
+!assets/
+!assets/*.mp4
+!assets/*.webm
+!assets/*.jpg
+!assets/*.png
 example_video/
 results/
 lightning_logs/
