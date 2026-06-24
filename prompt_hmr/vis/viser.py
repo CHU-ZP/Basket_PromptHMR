@@ -296,4 +296,118 @@ def viser_vis_world4d(images, world4d, faces, init_fps=25, block=False, floor=No
     return server, gui
 
 
+def viser_vis_world4d_nocamera(world4d, faces, init_fps=25, block=False, floor=None):
+    if type(faces) is torch.Tensor:
+        faces = faces.cpu().numpy()
+
+    try:
+        server.scene.reset()
+    except NameError:
+        server = viser.ViserServer()
+
+    server.scene.world_axes.visible = True
+    server.scene.set_up_direction("+y")
+
+    num_frames = len(world4d)
+    gui_timestep = server.gui.add_slider(
+        "Timestep",
+        min=0,
+        max=num_frames - 1,
+        step=1,
+        initial_value=0,
+        disabled=True,
+    )
+    gui_next_frame = server.gui.add_button("Next Frame", disabled=True)
+    gui_prev_frame = server.gui.add_button("Prev Frame", disabled=True)
+    gui_playing = server.gui.add_checkbox("Playing", True)
+    gui_framerate = server.gui.add_slider(
+        "FPS", min=1, max=60, step=0.1, initial_value=init_fps
+    )
+    gui_framerate_options = server.gui.add_button_group(
+        "FPS options", ("10", "20", "30", "60")
+    )
+
+    @gui_next_frame.on_click
+    def _(_) -> None:
+        gui_timestep.value = (gui_timestep.value + 1) % num_frames
+
+    @gui_prev_frame.on_click
+    def _(_) -> None:
+        gui_timestep.value = (gui_timestep.value - 1) % num_frames
+
+    @gui_playing.on_update
+    def _(_) -> None:
+        gui_timestep.disabled = gui_playing.value
+        gui_next_frame.disabled = gui_playing.value
+        gui_prev_frame.disabled = gui_playing.value
+
+    @gui_framerate_options.on_click
+    def _(_) -> None:
+        gui_framerate.value = int(gui_framerate_options.value)
+
+    prev_timestep = gui_timestep.value
+
+    @gui_timestep.on_update
+    def _(_) -> None:
+        nonlocal prev_timestep
+        current_timestep = gui_timestep.value
+        with server.atomic():
+            frame_nodes[current_timestep].visible = True
+            frame_nodes[prev_timestep].visible = False
+        prev_timestep = current_timestep
+        server.flush()
+
+    server.scene.add_frame(
+        "/frames",
+        wxyz=vtf.SO3.exp(np.array([0.0, 0.0, 0.0])).wxyz,
+        position=(0, 0, 0),
+        show_axes=False,
+    )
+    frame_nodes: list[viser.FrameHandle] = []
+    mesh_nodes: list[viser.MeshHandle] = []
+
+    for i in tqdm(range(num_frames)):
+        frame_nodes.append(server.scene.add_frame(f"/frames/t{i}", show_axes=False))
+
+        if 'vertices' not in world4d[i]:
+            continue
+
+        track_id = world4d[i]['track_id']
+        vertices = copy.deepcopy(world4d[i]['vertices'])
+        for tid, verts in zip(track_id, vertices):
+            tid = int(tid)
+            mesh_nodes.append(
+                server.scene.add_mesh_simple(
+                    name=f"/frames/t{i}/human_{tid}",
+                    vertices=verts,
+                    faces=faces,
+                    flat_shading=False,
+                    wireframe=False,
+                    color=get_color(tid),
+                )
+            )
+
+    if floor is not None:
+        fv, ff = floor
+        server.scene.add_mesh_simple(
+            f"/floor",
+            vertices=fv,
+            faces=ff,
+            flat_shading=False,
+            wireframe=True,
+            color=(50, 50, 50),
+        )
+
+    for i, frame_node in enumerate(frame_nodes):
+        frame_node.visible = i == gui_timestep.value
+
+    if block:
+        while True:
+            if gui_playing.value:
+                gui_timestep.value = (gui_timestep.value + 1) % num_frames
+            time.sleep(1.0 / gui_framerate.value)
+
+    gui = [gui_playing, gui_timestep, gui_framerate, num_frames]
+    return server, gui
+
 
