@@ -486,11 +486,11 @@
         ],
         stagesTitle: "Pipeline Overview",
         stages: [
-          ["1. Video Preparation", "Long videos are split into short clips and loaded as RGB frames, with optional resizing, frame-rate control, or format conversion."],
-          ["2. Player Understanding", "The pipeline detects players, generates masks, tracks identities across frames, and estimates 2D keypoints for each tracked person."],
-          ["3. Camera Estimation", "Camera intrinsics and motion are estimated so that the reconstruction can be interpreted in a stable scene coordinate system."],
-          ["4. Human Reconstruction", "PromptHMR / video HMR predicts each player's SMPL-X pose, shape, and translation over time."],
-          ["5. World Alignment and Export", "Bodies are aligned into a shared world coordinate system, optionally refined, and exported as results.pkl, SMPL, MCS, and GLB files."],
+          ["1. Video Preparation", "OpenCV estimates Farneback optical-flow magnitude to find shot changes; FFmpeg cuts long videos into short clips, then OpenCV reads RGB frames with resizing and frame-rate control."],
+          ["2. Player Understanding", "Detectron2 or YOLO proposes player boxes, SAM2 propagates masks and tracks through the clip, and ViTPose estimates COCO/OpenPose-style 2D keypoints for each track."],
+          ["3. Camera Estimation", "DROID-Calib / masked DROID-SLAM estimates camera intrinsics and per-frame poses; static-camera and SPEC-style calibration paths cover fixed or low-motion footage."],
+          ["4. Human Reconstruction", "PromptHMR-Video consumes crops, boxes, masks, keypoints, and camera intrinsics to predict each player's SMPL-X pose, shape, and camera-space translation over time."],
+          ["5. World Alignment and Export", "Camera extrinsics transform SMPL-X bodies into a shared world coordinate system; optional PyTorch post-optimization uses reprojection, temporal, contact, and floor constraints before exporting results.pkl, SMPL, MCS, and GLB files."],
         ],
         exportsTitle: "Result Export",
         exports: [
@@ -527,11 +527,11 @@
         ],
         stagesTitle: "流程概览",
         stages: [
-          ["1. 视频准备", "长视频先切成短片段，并读取为 RGB 帧序列；读取时可进行缩放、降帧或格式转换。"],
-          ["2. 球员理解", "系统检测球员、生成 mask、跨帧跟踪身份，并为每个 track 估计 2D 关键点。"],
-          ["3. 相机估计", "pipeline 会估计相机内参和相机运动，从而把重建结果放入稳定的场景坐标系。"],
-          ["4. 人体重建", "PromptHMR / video HMR 预测每个球员随时间变化的 SMPL-X pose、shape 和 translation。"],
-          ["5. 世界坐标与导出", "人体结果会被对齐到统一世界坐标系，可选后优化后导出 results.pkl、SMPL、MCS 和 GLB 文件。"],
+          ["1. 视频准备", "使用 OpenCV 的 Farneback optical flow 估计帧间运动幅值来寻找镜头变化，再用 FFmpeg 切成长视频片段；随后用 OpenCV 读取 RGB 帧，并支持缩放和帧率控制。"],
+          ["2. 球员理解", "使用 Detectron2 或 YOLO 产生球员检测框，SAM2 video predictor 跨帧传播 mask 和 track，ViTPose 为每个 track 估计 COCO/OpenPose 风格的 2D 关键点。"],
+          ["3. 相机估计", "使用 DROID-Calib / masked DROID-SLAM 估计相机内参和逐帧位姿；对于固定机位或低运动视频，也支持 static-camera 与 SPEC-style calibration 路径。"],
+          ["4. 人体重建", "PromptHMR-Video 结合图像 crop、检测框、mask、2D keypoints 和相机内参，预测每个球员随时间变化的 SMPL-X pose、shape 和相机坐标系 translation。"],
+          ["5. 世界坐标与导出", "利用相机外参把 SMPL-X 人体从相机坐标转换到统一世界坐标系；可选 PyTorch 后优化会加入重投影、时序平滑、脚部接触和地面约束，最后导出 results.pkl、SMPL、MCS 和 GLB 文件。"],
         ],
         exportsTitle: "结果导出",
         exports: [
