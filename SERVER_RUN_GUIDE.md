@@ -346,7 +346,7 @@ results/my_video/subject-*.smpl
 如果手里是长视频，可以先切成短片段：
 
 ```bash
-uv run python cut_video_frame_precise_batch.py \
+uv run python scripts/split_videos.py \
   /path/to/long/videos \
   data/basketball_cut \
   --threshold 6.0 \

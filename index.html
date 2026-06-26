@@ -50,13 +50,25 @@
       font-weight: 720;
     }
 
+    p {
+      margin: 0;
+      line-height: 1.6;
+    }
+
     .meta {
       margin-top: 8px;
       color: var(--muted);
       font-size: 14px;
     }
 
-    .clip-tabs {
+    .header-actions {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+    }
+
+    .clip-tabs,
+    .language-tabs {
       display: inline-flex;
       gap: 4px;
       padding: 4px;
@@ -66,6 +78,7 @@
     }
 
     .clip-tab,
+    .language-tab,
     .control {
       min-height: 36px;
       border: 1px solid transparent;
@@ -76,14 +89,53 @@
       cursor: pointer;
     }
 
-    .clip-tab {
+    .clip-tab,
+    .language-tab {
       padding: 0 14px;
       color: var(--muted);
     }
 
-    .clip-tab[aria-pressed="true"] {
+    .clip-tab[aria-pressed="true"],
+    .language-tab[aria-pressed="true"] {
       color: #06100c;
       background: var(--accent);
+    }
+
+    .intro,
+    .pipeline-details {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #12161d;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .intro h2,
+    .pipeline-details h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .flow,
+    .exports {
+      margin: 0;
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0b0f14;
+      color: #dbe5ef;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre;
     }
 
     .stage {
@@ -154,7 +206,8 @@
     }
 
     .control:hover,
-    .clip-tab:hover {
+    .clip-tab:hover,
+    .language-tab:hover {
       border-color: var(--accent-strong);
     }
 
@@ -170,22 +223,65 @@
       text-align: right;
     }
 
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .pipeline-step {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #171b22;
+    }
+
+    .pipeline-step h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .pipeline-step p,
+    .summary {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .export-block {
+      margin-top: 18px;
+    }
+
+    .summary {
+      margin-top: 16px;
+    }
+
     @media (max-width: 860px) {
       main {
         padding: 18px;
       }
 
       header,
+      .intro,
       .stage,
-      .controls {
+      .controls,
+      .pipeline-grid {
         display: grid;
         grid-template-columns: 1fr;
       }
 
+      .header-actions {
+        justify-items: stretch;
+      }
+
+      .language-tabs,
       .clip-tabs {
         width: 100%;
       }
 
+      .language-tab,
       .clip-tab {
         flex: 1;
       }
@@ -201,19 +297,33 @@
   <main>
     <header>
       <div>
-        <h1>Basket PromptHMR Demo</h1>
+        <h1 id="pageTitle">Basket PromptHMR Demo</h1>
         <div class="meta" id="clipMeta">Segment 001</div>
       </div>
-      <div class="clip-tabs" aria-label="Clip selection">
-        <button class="clip-tab" type="button" data-clip="0" aria-pressed="true">Segment 001</button>
-        <button class="clip-tab" type="button" data-clip="1" aria-pressed="false">Segment 011</button>
+      <div class="header-actions">
+        <div class="language-tabs" aria-label="Language selection">
+          <button class="language-tab" type="button" data-lang="en" aria-pressed="true">English</button>
+          <button class="language-tab" type="button" data-lang="zh" aria-pressed="false">中文</button>
+        </div>
+        <div class="clip-tabs" aria-label="Clip selection" id="clipTabs">
+          <button class="clip-tab" type="button" data-clip="0" aria-pressed="true">Segment 001</button>
+          <button class="clip-tab" type="button" data-clip="1" aria-pressed="false">Segment 011</button>
+        </div>
       </div>
     </header>
+
+    <section class="intro" aria-labelledby="pipelineTitle">
+      <div>
+        <h2 id="pipelineTitle">Video Reconstruction Pipeline</h2>
+        <p id="pipelineDescription"></p>
+      </div>
+      <pre class="flow" id="pipelineFlow"></pre>
+    </section>
 
     <div class="stage">
       <section>
         <div class="label">
-          <h2>Original Video</h2>
+          <h2 id="sourceTitle">Original Video</h2>
           <span class="tag" id="sourceName">segment_001.mp4</span>
         </div>
         <div class="video-shell">
@@ -223,7 +333,7 @@
 
       <section>
         <div class="label">
-          <h2>3D Reconstruction</h2>
+          <h2 id="reconTitle">3D Reconstruction</h2>
           <span class="tag" id="reconName">segment001_3d.mp4</span>
         </div>
         <div class="video-shell">
@@ -238,21 +348,126 @@
       <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Timeline" />
       <div class="time" id="timeLabel">0.0 / 0.0s</div>
     </div>
+
+    <section class="pipeline-details" aria-labelledby="stagesTitle">
+      <h2 id="stagesTitle">Pipeline Stages</h2>
+      <div class="pipeline-grid" id="pipelineStages"></div>
+      <div class="export-block">
+        <h2 id="exportsTitle">Result Export</h2>
+        <pre class="exports" id="exportsList"></pre>
+      </div>
+      <p class="summary" id="summaryText"></p>
+    </section>
   </main>
 
   <script>
     const clips = [
       {
-        label: "Segment 001",
+        label: { en: "Segment 001", zh: "片段 001" },
         source: "assets/segment_001.mp4",
         reconstruction: "assets/segment001_3d.mp4",
       },
       {
-        label: "Segment 011",
+        label: { en: "Segment 011", zh: "片段 011" },
         source: "assets/segment_011.mp4",
         reconstruction: "assets/segment011_3d.mp4",
       },
     ];
+
+    const translations = {
+      en: {
+        htmlLang: "en",
+        pageTitle: "Basket PromptHMR Demo",
+        clipSelection: "Clip selection",
+        languageSelection: "Language selection",
+        sourceTitle: "Original Video",
+        reconTitle: "3D Reconstruction",
+        play: "Play",
+        pause: "Pause",
+        restart: "Restart",
+        timeline: "Timeline",
+        pipelineTitle: "Video Reconstruction Pipeline",
+        pipelineDescription: "This project reconstructs multi-person 3D human motion from input videos. The pipeline detects and tracks people, estimates camera motion, reconstructs each person with PromptHMR, aligns all bodies into a shared world coordinate system, and exports the final 3D animation results for visualization and analysis.",
+        flow: [
+          "Video",
+          "  -> Video Segmentation",
+          "  -> Frame Loading",
+          "  -> Human Detection / Segmentation / Tracking",
+          "  -> Camera Calibration / Motion Estimation",
+          "  -> 2D Keypoint Estimation",
+          "  -> PromptHMR Human Reconstruction",
+          "  -> World-coordinate Alignment",
+          "  -> Optional Post-optimization",
+          "  -> Result Export",
+        ],
+        stagesTitle: "Pipeline Stages",
+        stages: [
+          ["1. Video Segmentation", "Long videos are split into shorter segments using optical-flow shot boundaries and FFmpeg. This reduces processing cost and improves tracking and camera-estimation stability."],
+          ["2. Frame Loading", "Each segment is loaded as RGB frames. The pipeline can resize frames, reduce frame rate, or convert video formats according to the configuration."],
+          ["3. Detection, Segmentation and Tracking", "People are detected in each frame, human masks are generated, and detections are linked into continuous tracks across time."],
+          ["4. Camera Calibration and Motion Estimation", "The pipeline estimates camera intrinsics and per-frame camera motion. Static-camera videos can use a static camera assumption."],
+          ["5. 2D Keypoint Estimation", "For each tracked person, 2D human keypoints are estimated from the detected bounding box and used as pose cues and optimization constraints."],
+          ["6. PromptHMR Human Reconstruction", "PromptHMR / video HMR predicts body pose, shape, and translation from image crops, boxes, masks, and keypoints, producing SMPL-X results over time."],
+          ["7. World-coordinate Alignment", "Camera-coordinate reconstructions are transformed into a shared world coordinate system using estimated camera extrinsics."],
+          ["8. Optional Post-optimization", "Temporal smoothness, keypoint reprojection, foot contact, floor constraints, and optional camera refinement can reduce jitter and floating artifacts."],
+          ["9. Result Export", "Final outputs are saved for debugging, analysis, visualization, and downstream 3D tools."],
+        ],
+        exportsTitle: "Result Export",
+        exports: [
+          "results.pkl      # Full pipeline outputs and intermediate results",
+          "subject-*.smpl   # Per-track SMPL / SMPL-X motion sequences",
+          "world4d.mcs      # Meshcapade-compatible scene animation format",
+          "world4d.glb      # 3D animation file for Blender or other viewers",
+        ],
+        summary: "In short, this pipeline turns an input video into a structured 3D human motion scene: it detects and tracks people, estimates camera motion, reconstructs each person with PromptHMR, aligns all bodies in world coordinates, and exports the animated 3D results.",
+      },
+      zh: {
+        htmlLang: "zh-Hans",
+        pageTitle: "Basket PromptHMR 演示",
+        clipSelection: "片段选择",
+        languageSelection: "语言选择",
+        sourceTitle: "原始视频",
+        reconTitle: "3D 重建结果",
+        play: "播放",
+        pause: "暂停",
+        restart: "重新开始",
+        timeline: "时间轴",
+        pipelineTitle: "视频重建流程",
+        pipelineDescription: "本项目从输入视频中重建多人 3D 人体运动。pipeline 会依次完成人体检测与跟踪、相机运动估计、基于 PromptHMR 的人体重建、世界坐标系对齐，并最终导出可用于可视化和后续分析的 3D 动画结果。",
+        flow: [
+          "视频",
+          "  -> 视频切片",
+          "  -> 视频帧读取",
+          "  -> 人体检测 / 分割 / 跟踪",
+          "  -> 相机标定 / 相机运动估计",
+          "  -> 2D 关键点估计",
+          "  -> PromptHMR 人体重建",
+          "  -> 世界坐标系对齐",
+          "  -> 可选后优化",
+          "  -> 结果导出",
+        ],
+        stagesTitle: "流程阶段",
+        stages: [
+          ["1. 视频切片", "长视频会被切分成若干较短片段。pipeline 通过光流估计检测明显的画面变化，并使用 FFmpeg 进行切片，以降低计算开销并提高跟踪和相机估计的稳定性。"],
+          ["2. 视频帧读取", "每个视频片段会被读取为 RGB 图像帧序列。读取过程中可根据配置进行图像缩放、帧率控制或视频格式转换。"],
+          ["3. 人体检测、分割与跟踪", "pipeline 会检测每一帧中的人物，生成人体检测框和 masks，并将不同帧中属于同一个人的检测结果关联成连续 track。"],
+          ["4. 相机标定与相机运动估计", "pipeline 会估计相机内参，并在需要时恢复每一帧的相机位姿。固定机位视频可以使用静态相机假设。"],
+          ["5. 2D 关键点估计", "对于每个被跟踪的人，pipeline 会基于检测框估计 2D 人体关键点，用作姿态重建线索和后优化阶段的重投影约束。"],
+          ["6. PromptHMR 人体重建", "核心重建阶段使用 PromptHMR / video HMR，根据图像区域、检测框、mask 和 2D keypoints 预测人体 pose、shape 和 translation，并生成随时间变化的 SMPL-X 人体结果。"],
+          ["7. 世界坐标系对齐", "在相机坐标系下完成人体重建后，pipeline 会利用相机外参将所有人物和所有帧对齐到统一的世界坐标系中。"],
+          ["8. 可选后优化", "后优化阶段可通过时序平滑、2D 关键点重投影、脚部接触、地面约束以及可选相机优化来减少抖动、脚底滑动、漂浮和穿地等问题。"],
+          ["9. 结果导出", "最终结果会以多种格式导出，用于调试、分析、可视化以及后续 3D 工具处理。"],
+        ],
+        exportsTitle: "结果导出",
+        exports: [
+          "results.pkl      # 完整 pipeline 输出和中间结果",
+          "subject-*.smpl   # 每个 track 对应的 SMPL / SMPL-X 动作序列",
+          "world4d.mcs      # Meshcapade 兼容的场景动画格式",
+          "world4d.glb      # 可用于 Blender 或其他 3D viewer 的 3D 动画文件",
+        ],
+        summary: "简而言之，这个 pipeline 将输入视频转换为结构化的 3D 人体运动场景：它先检测并跟踪人物，再估计相机运动，随后使用 PromptHMR 重建每个人的 3D 人体，并将所有结果对齐到世界坐标系中，最后导出可视化和分析所需的 3D 动画结果。",
+      },
+    };
 
     const sourceVideo = document.querySelector("#sourceVideo");
     const reconVideo = document.querySelector("#reconVideo");
@@ -264,8 +479,23 @@
     const sourceName = document.querySelector("#sourceName");
     const reconName = document.querySelector("#reconName");
     const tabs = Array.from(document.querySelectorAll(".clip-tab"));
+    const langTabs = Array.from(document.querySelectorAll(".language-tab"));
+    const pageTitle = document.querySelector("#pageTitle");
+    const sourceTitle = document.querySelector("#sourceTitle");
+    const reconTitle = document.querySelector("#reconTitle");
+    const pipelineTitle = document.querySelector("#pipelineTitle");
+    const pipelineDescription = document.querySelector("#pipelineDescription");
+    const pipelineFlow = document.querySelector("#pipelineFlow");
+    const stagesTitle = document.querySelector("#stagesTitle");
+    const pipelineStages = document.querySelector("#pipelineStages");
+    const exportsTitle = document.querySelector("#exportsTitle");
+    const exportsList = document.querySelector("#exportsList");
+    const summaryText = document.querySelector("#summaryText");
+    const clipTabs = document.querySelector("#clipTabs");
+    const languageTabs = document.querySelector(".language-tabs");
 
     let activeClip = 0;
+    let activeLang = "en";
     let seeking = false;
 
     function basename(path) {
@@ -292,36 +522,94 @@
       syncReconstruction();
     }
 
-    function setClip(index) {
+    function setPlayPauseLabel() {
+      const text = translations[activeLang];
+      playPause.textContent = sourceVideo.paused ? text.play : text.pause;
+    }
+
+    function renderPipelineStages() {
+      const text = translations[activeLang];
+      pipelineStages.replaceChildren();
+      text.stages.forEach(([title, body]) => {
+        const article = document.createElement("article");
+        const heading = document.createElement("h3");
+        const paragraph = document.createElement("p");
+        article.className = "pipeline-step";
+        heading.textContent = title;
+        paragraph.textContent = body;
+        article.append(heading, paragraph);
+        pipelineStages.append(article);
+      });
+    }
+
+    function setLanguage(lang) {
+      activeLang = lang;
+      const text = translations[activeLang];
+      document.documentElement.lang = text.htmlLang;
+      pageTitle.textContent = text.pageTitle;
+      sourceTitle.textContent = text.sourceTitle;
+      reconTitle.textContent = text.reconTitle;
+      restart.textContent = text.restart;
+      timeline.setAttribute("aria-label", text.timeline);
+      clipTabs.setAttribute("aria-label", text.clipSelection);
+      languageTabs.setAttribute("aria-label", text.languageSelection);
+      pipelineTitle.textContent = text.pipelineTitle;
+      pipelineDescription.textContent = text.pipelineDescription;
+      pipelineFlow.textContent = text.flow.join("\n");
+      stagesTitle.textContent = text.stagesTitle;
+      exportsTitle.textContent = text.exportsTitle;
+      exportsList.textContent = text.exports.join("\n");
+      summaryText.textContent = text.summary;
+      renderPipelineStages();
+      langTabs.forEach((tab) => {
+        tab.setAttribute("aria-pressed", String(tab.dataset.lang === activeLang));
+      });
+      setClip(activeClip, false);
+      setPlayPauseLabel();
+    }
+
+    function setClip(index, resetPlayback = true) {
       activeClip = index;
       const clip = clips[index];
-      sourceVideo.pause();
-      reconVideo.pause();
-      sourceVideo.src = clip.source;
-      reconVideo.src = clip.reconstruction;
-      clipMeta.textContent = clip.label;
+      const shouldReload = sourceVideo.getAttribute("src") !== clip.source;
+      if (resetPlayback) {
+        sourceVideo.pause();
+        reconVideo.pause();
+      }
+      if (shouldReload) {
+        sourceVideo.src = clip.source;
+        reconVideo.src = clip.reconstruction;
+      }
+      clipMeta.textContent = clip.label[activeLang];
       sourceName.textContent = basename(clip.source);
       reconName.textContent = basename(clip.reconstruction);
-      playPause.textContent = "Play";
-      timeline.value = "0";
-      timeLabel.textContent = "0.0 / 0.0s";
+      tabs.forEach((tab, tabIndex) => {
+        tab.textContent = clips[tabIndex].label[activeLang];
+      });
+      if (resetPlayback || shouldReload) {
+        timeline.value = "0";
+        timeLabel.textContent = "0.0 / 0.0s";
+      }
       tabs.forEach((tab, tabIndex) => {
         tab.setAttribute("aria-pressed", String(tabIndex === index));
       });
-      sourceVideo.load();
-      reconVideo.load();
+      if (shouldReload) {
+        sourceVideo.load();
+        reconVideo.load();
+      }
+      setPlayPauseLabel();
     }
 
     async function playBoth() {
       syncReconstruction();
       await Promise.allSettled([sourceVideo.play(), reconVideo.play()]);
-      playPause.textContent = "Pause";
+      setPlayPauseLabel();
     }
 
     function pauseBoth() {
       sourceVideo.pause();
       reconVideo.pause();
-      playPause.textContent = "Play";
+      setPlayPauseLabel();
     }
 
     playPause.addEventListener("click", () => {
@@ -366,7 +654,13 @@
       });
     });
 
-    setClip(activeClip);
+    langTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setLanguage(tab.dataset.lang);
+      });
+    });
+
+    setLanguage(activeLang);
   </script>
 </body>
 </html>

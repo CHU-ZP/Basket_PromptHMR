@@ -12,6 +12,7 @@
 !assets/*.png
 example_video/
 results/
+run_batch_logs/
 lightning_logs/
 data_protect/
 data/*
