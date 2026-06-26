@@ -282,32 +282,42 @@
       text-align: right;
     }
 
-    .pipeline-grid {
+    .pipeline-list {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 12px;
+      gap: 0;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
     }
 
-    .pipeline-step {
+    .pipeline-item {
       min-width: 0;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface);
-      box-shadow: 0 10px 24px rgba(39, 56, 77, 0.06);
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      gap: 18px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--line);
     }
 
-    .pipeline-step h3 {
-      margin: 0 0 8px;
+    .pipeline-item:last-child {
+      border-bottom: 0;
+    }
+
+    .pipeline-item h3 {
+      margin: 0;
       font-size: 14px;
-      line-height: 1.3;
+      line-height: 1.45;
     }
 
-    .pipeline-step p,
+    .pipeline-item p,
     .summary {
       color: var(--muted);
       font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .pipeline-item p {
+      margin: 0;
     }
 
     .export-block {
@@ -327,10 +337,14 @@
       .intro,
       .stage,
       .demo-header,
-      .controls,
-      .pipeline-grid {
+      .controls {
         display: grid;
         grid-template-columns: 1fr;
+      }
+
+      .pipeline-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
       }
 
       .header-actions {
@@ -379,7 +393,7 @@
 
     <section class="pipeline-details" aria-labelledby="stagesTitle">
       <h2 id="stagesTitle">Pipeline Stages</h2>
-      <div class="pipeline-grid" id="pipelineStages"></div>
+      <ol class="pipeline-list" id="pipelineStages"></ol>
       <div class="export-block">
         <h2 id="exportsTitle">Result Export</h2>
         <pre class="exports" id="exportsList"></pre>
@@ -461,30 +475,22 @@
         restart: "Restart",
         timeline: "Timeline",
         pipelineTitle: "Video Reconstruction Pipeline",
-        pipelineDescription: "This project reconstructs multi-person 3D human motion from input videos. The pipeline detects and tracks people, estimates camera motion, reconstructs each person with PromptHMR, aligns all bodies into a shared world coordinate system, and exports the final 3D animation results for visualization and analysis.",
+        pipelineDescription: "This demo reconstructs multi-person 3D motion from basketball video. The system combines player tracking, camera estimation, and PromptHMR to produce world-coordinate 3D animation results.",
         flow: [
           "Video",
-          "  -> Video Segmentation",
-          "  -> Frame Loading",
-          "  -> Human Detection / Segmentation / Tracking",
-          "  -> Camera Calibration / Motion Estimation",
-          "  -> 2D Keypoint Estimation",
-          "  -> PromptHMR Human Reconstruction",
-          "  -> World-coordinate Alignment",
-          "  -> Optional Post-optimization",
-          "  -> Result Export",
+          "  -> Split and load clips",
+          "  -> Detect, segment, and track players",
+          "  -> Estimate camera motion and 2D keypoints",
+          "  -> Reconstruct bodies with PromptHMR",
+          "  -> Align, refine, and export 3D results",
         ],
-        stagesTitle: "Pipeline Stages",
+        stagesTitle: "Pipeline Overview",
         stages: [
-          ["1. Video Segmentation", "Long videos are split into shorter segments using optical-flow shot boundaries and FFmpeg. This reduces processing cost and improves tracking and camera-estimation stability."],
-          ["2. Frame Loading", "Each segment is loaded as RGB frames. The pipeline can resize frames, reduce frame rate, or convert video formats according to the configuration."],
-          ["3. Detection, Segmentation and Tracking", "People are detected in each frame, human masks are generated, and detections are linked into continuous tracks across time."],
-          ["4. Camera Calibration and Motion Estimation", "The pipeline estimates camera intrinsics and per-frame camera motion. Static-camera videos can use a static camera assumption."],
-          ["5. 2D Keypoint Estimation", "For each tracked person, 2D human keypoints are estimated from the detected bounding box and used as pose cues and optimization constraints."],
-          ["6. PromptHMR Human Reconstruction", "PromptHMR / video HMR predicts body pose, shape, and translation from image crops, boxes, masks, and keypoints, producing SMPL-X results over time."],
-          ["7. World-coordinate Alignment", "Camera-coordinate reconstructions are transformed into a shared world coordinate system using estimated camera extrinsics."],
-          ["8. Optional Post-optimization", "Temporal smoothness, keypoint reprojection, foot contact, floor constraints, and optional camera refinement can reduce jitter and floating artifacts."],
-          ["9. Result Export", "Final outputs are saved for debugging, analysis, visualization, and downstream 3D tools."],
+          ["1. Video Preparation", "Long videos are split into short clips and loaded as RGB frames, with optional resizing, frame-rate control, or format conversion."],
+          ["2. Player Understanding", "The pipeline detects players, generates masks, tracks identities across frames, and estimates 2D keypoints for each tracked person."],
+          ["3. Camera Estimation", "Camera intrinsics and motion are estimated so that the reconstruction can be interpreted in a stable scene coordinate system."],
+          ["4. Human Reconstruction", "PromptHMR / video HMR predicts each player's SMPL-X pose, shape, and translation over time."],
+          ["5. World Alignment and Export", "Bodies are aligned into a shared world coordinate system, optionally refined, and exported as results.pkl, SMPL, MCS, and GLB files."],
         ],
         exportsTitle: "Result Export",
         exports: [
@@ -505,35 +511,27 @@
         reconTitle: "3D 重建结果",
         demoTitle: "重建效果演示",
         demoDescription: "选择一个短片段，对比原始篮球视频和渲染后的 3D 重建结果。",
-        play: "播放",
-        pause: "暂停",
-        restart: "重新开始",
+        play: "Play",
+        pause: "Pause",
+        restart: "Restart",
         timeline: "时间轴",
         pipelineTitle: "视频重建流程",
-        pipelineDescription: "本项目从输入视频中重建多人 3D 人体运动。pipeline 会依次完成人体检测与跟踪、相机运动估计、基于 PromptHMR 的人体重建、世界坐标系对齐，并最终导出可用于可视化和后续分析的 3D 动画结果。",
+        pipelineDescription: "这个 demo 从篮球视频中重建多人 3D 人体运动。系统结合球员跟踪、相机估计和 PromptHMR，生成世界坐标系下的 3D 动画结果。",
         flow: [
           "视频",
-          "  -> 视频切片",
-          "  -> 视频帧读取",
-          "  -> 人体检测 / 分割 / 跟踪",
-          "  -> 相机标定 / 相机运动估计",
-          "  -> 2D 关键点估计",
-          "  -> PromptHMR 人体重建",
-          "  -> 世界坐标系对齐",
-          "  -> 可选后优化",
-          "  -> 结果导出",
+          "  -> 切片并读取视频帧",
+          "  -> 检测、分割并跟踪球员",
+          "  -> 估计相机运动和 2D 关键点",
+          "  -> 使用 PromptHMR 重建人体",
+          "  -> 对齐、优化并导出 3D 结果",
         ],
-        stagesTitle: "流程阶段",
+        stagesTitle: "流程概览",
         stages: [
-          ["1. 视频切片", "长视频会被切分成若干较短片段。pipeline 通过光流估计检测明显的画面变化，并使用 FFmpeg 进行切片，以降低计算开销并提高跟踪和相机估计的稳定性。"],
-          ["2. 视频帧读取", "每个视频片段会被读取为 RGB 图像帧序列。读取过程中可根据配置进行图像缩放、帧率控制或视频格式转换。"],
-          ["3. 人体检测、分割与跟踪", "pipeline 会检测每一帧中的人物，生成人体检测框和 masks，并将不同帧中属于同一个人的检测结果关联成连续 track。"],
-          ["4. 相机标定与相机运动估计", "pipeline 会估计相机内参，并在需要时恢复每一帧的相机位姿。固定机位视频可以使用静态相机假设。"],
-          ["5. 2D 关键点估计", "对于每个被跟踪的人，pipeline 会基于检测框估计 2D 人体关键点，用作姿态重建线索和后优化阶段的重投影约束。"],
-          ["6. PromptHMR 人体重建", "核心重建阶段使用 PromptHMR / video HMR，根据图像区域、检测框、mask 和 2D keypoints 预测人体 pose、shape 和 translation，并生成随时间变化的 SMPL-X 人体结果。"],
-          ["7. 世界坐标系对齐", "在相机坐标系下完成人体重建后，pipeline 会利用相机外参将所有人物和所有帧对齐到统一的世界坐标系中。"],
-          ["8. 可选后优化", "后优化阶段可通过时序平滑、2D 关键点重投影、脚部接触、地面约束以及可选相机优化来减少抖动、脚底滑动、漂浮和穿地等问题。"],
-          ["9. 结果导出", "最终结果会以多种格式导出，用于调试、分析、可视化以及后续 3D 工具处理。"],
+          ["1. 视频准备", "长视频先切成短片段，并读取为 RGB 帧序列；读取时可进行缩放、降帧或格式转换。"],
+          ["2. 球员理解", "系统检测球员、生成 mask、跨帧跟踪身份，并为每个 track 估计 2D 关键点。"],
+          ["3. 相机估计", "pipeline 会估计相机内参和相机运动，从而把重建结果放入稳定的场景坐标系。"],
+          ["4. 人体重建", "PromptHMR / video HMR 预测每个球员随时间变化的 SMPL-X pose、shape 和 translation。"],
+          ["5. 世界坐标与导出", "人体结果会被对齐到统一世界坐标系，可选后优化后导出 results.pkl、SMPL、MCS 和 GLB 文件。"],
         ],
         exportsTitle: "结果导出",
         exports: [
@@ -542,7 +540,7 @@
           "world4d.mcs      # Meshcapade 兼容的场景动画格式",
           "world4d.glb      # 可用于 Blender 或其他 3D viewer 的 3D 动画文件",
         ],
-        summary: "简而言之，这个 pipeline 将输入视频转换为结构化的 3D 人体运动场景：它先检测并跟踪人物，再估计相机运动，随后使用 PromptHMR 重建每个人的 3D 人体，并将所有结果对齐到世界坐标系中，最后导出可视化和分析所需的 3D 动画结果。",
+        summary: "简而言之，这个 pipeline 把输入视频转换为结构化的 3D 人体运动场景，用于可视化、分析和后续 3D 工具处理。",
       },
     };
 
@@ -611,14 +609,14 @@
       const text = translations[activeLang];
       pipelineStages.replaceChildren();
       text.stages.forEach(([title, body]) => {
-        const article = document.createElement("article");
+        const item = document.createElement("li");
         const heading = document.createElement("h3");
         const paragraph = document.createElement("p");
-        article.className = "pipeline-step";
+        item.className = "pipeline-item";
         heading.textContent = title;
         paragraph.textContent = body;
-        article.append(heading, paragraph);
-        pipelineStages.append(article);
+        item.append(heading, paragraph);
+        pipelineStages.append(item);
       });
     }
 
