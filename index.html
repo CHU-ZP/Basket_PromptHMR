@@ -6,14 +6,17 @@
   <title>Basket PromptHMR Demo</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #0e1116;
-      --panel: #171b22;
-      --line: #2a303a;
-      --text: #f3f5f7;
-      --muted: #9da6b2;
-      --accent: #53c6a2;
-      --accent-strong: #72e0bc;
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-muted: #eef3f8;
+      --line: #d6dee8;
+      --text: #17202a;
+      --muted: #607083;
+      --accent: #0f9f8f;
+      --accent-strong: #0b756d;
+      --code-bg: #111827;
+      --code-text: #edf7f5;
     }
 
     * {
@@ -31,7 +34,7 @@
     main {
       width: min(1440px, 100%);
       margin: 0 auto;
-      padding: 28px;
+      padding: 32px 28px 48px;
     }
 
     header {
@@ -48,6 +51,7 @@
       font-size: 28px;
       line-height: 1.15;
       font-weight: 720;
+      letter-spacing: 0;
     }
 
     p {
@@ -73,7 +77,7 @@
       gap: 4px;
       padding: 4px;
       border: 1px solid var(--line);
-      background: #11151b;
+      background: var(--surface);
       border-radius: 8px;
     }
 
@@ -97,17 +101,16 @@
 
     .clip-tab[aria-pressed="true"],
     .language-tab[aria-pressed="true"] {
-      color: #06100c;
+      color: #ffffff;
       background: var(--accent);
     }
 
     .intro,
-    .pipeline-details {
-      margin-top: 22px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #12161d;
+    .pipeline-details,
+    .demo-section {
+      margin-top: 28px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
     }
 
     .intro {
@@ -115,10 +118,13 @@
       grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
       gap: 18px;
       align-items: start;
+      padding-top: 0;
+      border-top: 0;
     }
 
     .intro h2,
-    .pipeline-details h2 {
+    .pipeline-details h2,
+    .demo-section h2 {
       margin: 0 0 10px;
       font-size: 18px;
       line-height: 1.25;
@@ -131,11 +137,27 @@
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #0b0f14;
-      color: #dbe5ef;
+      background: var(--code-bg);
+      color: var(--code-text);
       font-size: 13px;
       line-height: 1.55;
       white-space: pre;
+    }
+
+    .demo-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .demo-copy {
+      max-width: 760px;
+    }
+
+    .demo-copy p {
+      color: var(--muted);
+      font-size: 15px;
     }
 
     .stage {
@@ -172,8 +194,9 @@
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: var(--panel);
+      background: var(--surface);
       aspect-ratio: 16 / 9;
+      box-shadow: 0 12px 30px rgba(39, 56, 77, 0.08);
     }
 
     video {
@@ -192,16 +215,17 @@
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #12161d;
+      background: var(--surface);
+      box-shadow: 0 12px 30px rgba(39, 56, 77, 0.07);
     }
 
     .control {
       padding: 0 14px;
-      background: #202631;
+      background: var(--surface-muted);
     }
 
     .control.primary {
-      color: #06100c;
+      color: #ffffff;
       background: var(--accent);
     }
 
@@ -212,8 +236,43 @@
     }
 
     input[type="range"] {
+      appearance: none;
       width: 100%;
+      height: 18px;
+      background: transparent;
       accent-color: var(--accent);
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--line);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      margin-top: -5px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(39, 56, 77, 0.22);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--line);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(39, 56, 77, 0.22);
     }
 
     .time {
@@ -235,7 +294,8 @@
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #171b22;
+      background: var(--surface);
+      box-shadow: 0 10px 24px rgba(39, 56, 77, 0.06);
     }
 
     .pipeline-step h3 {
@@ -266,6 +326,7 @@
       header,
       .intro,
       .stage,
+      .demo-header,
       .controls,
       .pipeline-grid {
         display: grid;
@@ -298,16 +359,12 @@
     <header>
       <div>
         <h1 id="pageTitle">Basket PromptHMR Demo</h1>
-        <div class="meta" id="clipMeta">Segment 001</div>
+        <div class="meta" id="pageMeta">Video Reconstruction Pipeline</div>
       </div>
       <div class="header-actions">
         <div class="language-tabs" aria-label="Language selection">
           <button class="language-tab" type="button" data-lang="en" aria-pressed="true">English</button>
           <button class="language-tab" type="button" data-lang="zh" aria-pressed="false">中文</button>
-        </div>
-        <div class="clip-tabs" aria-label="Clip selection" id="clipTabs">
-          <button class="clip-tab" type="button" data-clip="0" aria-pressed="true">Segment 001</button>
-          <button class="clip-tab" type="button" data-clip="1" aria-pressed="false">Segment 011</button>
         </div>
       </div>
     </header>
@@ -320,35 +377,6 @@
       <pre class="flow" id="pipelineFlow"></pre>
     </section>
 
-    <div class="stage">
-      <section>
-        <div class="label">
-          <h2 id="sourceTitle">Original Video</h2>
-          <span class="tag" id="sourceName">segment_001.mp4</span>
-        </div>
-        <div class="video-shell">
-          <video id="sourceVideo" muted playsinline preload="metadata"></video>
-        </div>
-      </section>
-
-      <section>
-        <div class="label">
-          <h2 id="reconTitle">3D Reconstruction</h2>
-          <span class="tag" id="reconName">segment001_3d.mp4</span>
-        </div>
-        <div class="video-shell">
-          <video id="reconVideo" muted playsinline preload="metadata"></video>
-        </div>
-      </section>
-    </div>
-
-    <div class="controls">
-      <button class="control primary" type="button" id="playPause">Play</button>
-      <button class="control" type="button" id="restart">Restart</button>
-      <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Timeline" />
-      <div class="time" id="timeLabel">0.0 / 0.0s</div>
-    </div>
-
     <section class="pipeline-details" aria-labelledby="stagesTitle">
       <h2 id="stagesTitle">Pipeline Stages</h2>
       <div class="pipeline-grid" id="pipelineStages"></div>
@@ -357,6 +385,49 @@
         <pre class="exports" id="exportsList"></pre>
       </div>
       <p class="summary" id="summaryText"></p>
+    </section>
+
+    <section class="demo-section" aria-labelledby="demoTitle">
+      <div class="demo-header">
+        <div class="demo-copy">
+          <h2 id="demoTitle">Reconstruction Demo</h2>
+          <p id="demoDescription"></p>
+          <div class="meta" id="clipMeta">Segment 001</div>
+        </div>
+        <div class="clip-tabs" aria-label="Clip selection" id="clipTabs">
+          <button class="clip-tab" type="button" data-clip="0" aria-pressed="true">Segment 001</button>
+          <button class="clip-tab" type="button" data-clip="1" aria-pressed="false">Segment 011</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <section>
+          <div class="label">
+            <h2 id="sourceTitle">Original Video</h2>
+            <span class="tag" id="sourceName">segment_001.mp4</span>
+          </div>
+          <div class="video-shell">
+            <video id="sourceVideo" muted playsinline preload="metadata"></video>
+          </div>
+        </section>
+
+        <section>
+          <div class="label">
+            <h2 id="reconTitle">3D Reconstruction</h2>
+            <span class="tag" id="reconName">segment001_3d.mp4</span>
+          </div>
+          <div class="video-shell">
+            <video id="reconVideo" muted playsinline preload="metadata"></video>
+          </div>
+        </section>
+      </div>
+
+      <div class="controls">
+        <button class="control primary" type="button" id="playPause">Play</button>
+        <button class="control" type="button" id="restart">Restart</button>
+        <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Timeline" />
+        <div class="time" id="timeLabel">0.0 / 0.0s</div>
+      </div>
     </section>
   </main>
 
@@ -378,10 +449,13 @@
       en: {
         htmlLang: "en",
         pageTitle: "Basket PromptHMR Demo",
+        pageMeta: "Video Reconstruction Pipeline",
         clipSelection: "Clip selection",
         languageSelection: "Language selection",
         sourceTitle: "Original Video",
         reconTitle: "3D Reconstruction",
+        demoTitle: "Reconstruction Demo",
+        demoDescription: "Select a short clip to compare the original basketball video with the rendered 3D reconstruction.",
         play: "Play",
         pause: "Pause",
         restart: "Restart",
@@ -424,10 +498,13 @@
       zh: {
         htmlLang: "zh-Hans",
         pageTitle: "Basket PromptHMR 演示",
+        pageMeta: "视频重建流程",
         clipSelection: "片段选择",
         languageSelection: "语言选择",
         sourceTitle: "原始视频",
         reconTitle: "3D 重建结果",
+        demoTitle: "重建效果演示",
+        demoDescription: "选择一个短片段，对比原始篮球视频和渲染后的 3D 重建结果。",
         play: "播放",
         pause: "暂停",
         restart: "重新开始",
@@ -481,8 +558,11 @@
     const tabs = Array.from(document.querySelectorAll(".clip-tab"));
     const langTabs = Array.from(document.querySelectorAll(".language-tab"));
     const pageTitle = document.querySelector("#pageTitle");
+    const pageMeta = document.querySelector("#pageMeta");
     const sourceTitle = document.querySelector("#sourceTitle");
     const reconTitle = document.querySelector("#reconTitle");
+    const demoTitle = document.querySelector("#demoTitle");
+    const demoDescription = document.querySelector("#demoDescription");
     const pipelineTitle = document.querySelector("#pipelineTitle");
     const pipelineDescription = document.querySelector("#pipelineDescription");
     const pipelineFlow = document.querySelector("#pipelineFlow");
@@ -547,8 +627,11 @@
       const text = translations[activeLang];
       document.documentElement.lang = text.htmlLang;
       pageTitle.textContent = text.pageTitle;
+      pageMeta.textContent = text.pageMeta;
       sourceTitle.textContent = text.sourceTitle;
       reconTitle.textContent = text.reconTitle;
+      demoTitle.textContent = text.demoTitle;
+      demoDescription.textContent = text.demoDescription;
       restart.textContent = text.restart;
       timeline.setAttribute("aria-label", text.timeline);
       clipTabs.setAttribute("aria-label", text.clipSelection);
